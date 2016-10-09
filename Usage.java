@@ -1,8 +1,8 @@
 import com.mptcp.Mptcp; 
 import java.net.Socket; 
 public class Usage{
-	public static void main(String[] args){
-	    try{
+    public static void main(String[] args){
+        try{
             Socket s = new Socket("multipath-tcp.org", 80); 
             int[][] res = Mptcp.getSubflowList(s);
             System.out.println("Listing: "); 
@@ -14,5 +14,5 @@ public class Usage{
             System.out.println("Exception"); 
             e.printStackTrace(); 
         }
-	}
+    }
 }
