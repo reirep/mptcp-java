@@ -24,6 +24,13 @@ makeipaddr (struct sockaddr *addr, int addrlen, char *buf)
 		      NI_NUMERICHOST);
 }
 
+jobject wrap_int(JNIEnv *env, int res){
+jclass integerClass = (*env)->FindClass(env, "java/lang/Integer");
+jmethodID integerConstructor = (*env)->GetMethodID(env, integerClass, "<init>", "(I)V");
+jobject wrappedInt = (*env)->NewObject(env, integerClass, integerConstructor, (jint)(res));
+return wrappedInt; 
+}
+
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowTuple
@@ -32,7 +39,6 @@ makeipaddr (struct sockaddr *addr, int addrlen, char *buf)
 JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   (JNIEnv * env, jclass class, jint sockfd, jint subid)
 {
-  PyObject *sock;
   unsigned int optlen;
   char buf1[512];
   char buf2[512];
@@ -61,7 +67,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   jobjectArray result;
   // TODO : trouver unen manière facile et optimale de retourner le résultat 
   // (qui fonctionne) 
-  result = (*env)->NewObjectArray (env, 4);
+  result = (*env)->NewObjectArray (env, 4, (*env)->FindClass(env, "java/lang/Object"), NULL);
   if (result == NULL)
     {
       return NULL;		/* out of memory error thrown */
@@ -69,8 +75,9 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
 
   makeipaddr ((struct sockaddr *) sin, sizeof (struct sockaddr_in), buf1);
 
-  (*env)->SetObjectArrayElement (result, 0, (*env)->NewStringUTF (buf1));
-  (*env)->SetObjectArrayElement (result, 1, ntohs (sin->sin_port));
+    printf("++ %s ++\n", buf1); 
+  (*env)->SetObjectArrayElement (env, result, 0, (*env)->NewStringUTF (env, buf1));
+  (*env)->SetObjectArrayElement (env, result, 1, wrap_int(env, ntohs (sin->sin_port)));
   // port: ntohs(sin->sin_port)
   // host: buf1
 
@@ -78,8 +85,8 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   sin++;
 
 
-  (*env)->SetObjectArrayElement (result, 2, (*env)->NewStringUTF (buf2));
-  (*env)->SetObjectArrayElement (result, 3, ntohs (sin->sin_port));
+  (*env)->SetObjectArrayElement (env, result, 2, (*env)->NewStringUTF (env, buf2));
+  (*env)->SetObjectArrayElement (env, result, 3, wrap_int(env, ntohs (sin->sin_port)));
   return result;
 
 }

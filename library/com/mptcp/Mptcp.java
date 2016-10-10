@@ -9,13 +9,17 @@ public class Mptcp{
     /**
         Structure that defines an host tuple (host, port) 
     */
-    static class HostTuple{
+    public static class HostTuple{
         public int port; 
         public String host; 
         
         public HostTuple(String host, int port){
             this.host = host; 
             this.port = port; 
+        }
+        
+        public String toString(){
+            return this.host + ":" + this.port; 
         }
     }
 
@@ -64,7 +68,8 @@ public class Mptcp{
 	    @return ?? todo ??
 	*/
 	public static HostTuple[] getSubflowTuple(Socket sock, int subid){
-	    return _native_getSubflowTuple(getSocketFD(sock), subid); 
+	    Object temp[] = _native_getSubflowTuple(getSocketFD(sock), subid); 
+	    return new HostTuple[]{new HostTuple((String)temp[0], (int)temp[1]), new HostTuple((String)temp[2], (int)temp[3])}; 
 	}
 	
 	/**
@@ -104,7 +109,7 @@ public class Mptcp{
 	// -- native interface -----------------------------------------------------
 	
 	private native static int[] _native_getSubflowList(int fd); 
-	private native static HostTuple[] _native_getSubflowTuple(int fd, int subid); 
+	private native static Object[] _native_getSubflowTuple(int fd, int subid); 
 	private native static int _native_closeSubflow(int fd, int subid, int how); 
 	private native static int _native_openSubflow(int fd, String source_host, int source_port, String dest_host, int dest_port, int priority); 
 
