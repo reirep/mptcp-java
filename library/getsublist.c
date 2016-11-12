@@ -22,15 +22,15 @@
 #define INIT_SUBNUM 4	// initial max number of subflows
 #define SUBNUM_FACT 2 	// growth per step
 #define MAX_SUBNUM 128 	// maximum acceptable number of subflows (for kernel memory)
-
+/*
 jint trowsMemErr(JNIEnv *env, char * message){
 	jclass OutMemErr = (*env)->findClass(env, "java/lang/OutOfMemoryError");
 	if (OutMemErr == NULL) {
         	return throwNoClassDefError(env, "java/lang/OutOfMemoryError");
     	}
-	return (*env)->ThrowNew( env, OutErrMem, message);
+	return (*env)->ThrowNew( env, OutMemErr, message);
 }
-
+*/
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowList
