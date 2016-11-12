@@ -1,23 +1,23 @@
-package com.mptcp; 
+package com.mptcp;
 import java.io.IOException;
-import java.net.Socket; 
-import java.lang.RuntimeException; 
-import java.io.FileInputStream; 
-import sun.misc.SharedSecrets; 
+import java.net.Socket;
+import java.lang.RuntimeException;
+import java.io.FileInputStream;
+import sun.misc.SharedSecrets;
 
 public class Mptcp{
     /**
-        Structure that defines an host tuple (host, port) 
+        Structure that defines an host tuple (host, port)
     */
     public static class HostTuple{
-        public int port; 
-        public String host; 
-        
+        public int port;
+        public String host;
+
         public HostTuple(String host, int port){
-            this.host = host; 
-            this.port = port; 
+            this.host = host;
+            this.port = port;
         }
-        
+
         public String toString(){
             return this.host + ":" + this.port; 
         }

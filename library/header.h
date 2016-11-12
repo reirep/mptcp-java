@@ -10,15 +10,15 @@ extern "C" {
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowList
- * Signature: (I)[[I
+ * Signature: (I)[I
  */
-JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
+JNIEXPORT jintArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
   (JNIEnv *, jclass, jint);
 
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowTuple
- * Signature: (II)[Lcom/mptcp/Mptcp/HostTuple;
+ * Signature: (II)[Ljava/lang/Object;
  */
 JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   (JNIEnv *, jclass, jint, jint);

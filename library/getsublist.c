@@ -23,55 +23,75 @@
 #define SUBNUM_FACT 2 	// growth per step
 #define MAX_SUBNUM 128 	// maximum acceptable number of subflows (for kernel memory)
 
+jint trowsMemErr(JNIEnv *env, char * message){
+	jclass OutMemErr = (*env)->findClass(env, "java/lang/OutOfMemoryError");
+	if (OutMemErr == NULL) {
+        	return throwNoClassDefError(env, "java/lang/OutOfMemoryError");
+    	}
+	return (*env)->ThrowNew( env, OutErrMem, message);
+}
+
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowList
- * Signature: (I)[[I
+ * Signature:
  */
 JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
   (JNIEnv *env, jclass class, jint sockfd){
     
         int i;
 		unsigned int optlen;
-		struct mptcp_sub_ids *ids;
+		struct mptcp_sub_ids *ids = malloc(1);
+		if(ids == NULL){
+			
+			//there is not enought memeory, throw an error
+			return NULL;
+		}
 
-		
+
 		int maxSub = INIT_SUBNUM; 
 		int res = 0; 
-		
+
 		while(maxSub < MAX_SUBNUM){
 			// tries to match at most maxSub subflows
-			
+
 			optlen =
 				sizeof(struct mptcp_sub_ids) +
 				maxSub * sizeof(struct mptcp_sub_status);
-			ids = malloc(optlen);
+			ids = realloc(ids, optlen);
+			if(ids == NULL){
+				return NULL;//TODO: check if it's the correct return and throw an exception
+			}
+
 			int res =
 				getsockopt(sockfd, IPPROTO_TCP, MPTCP_GET_SUB_IDS, ids,
 					   &optlen);
-					   
+
 			if(res >= 0){
 				// enough memory and good result
-				break; 
+				break;
 			}
 			else if(errno != EINVAL){
 				// enough memory and bad result
-				perror("Native error while listing subflows: "); 
-				return errno; 
+				free(ids);
+				//create an exception here
+				return NULL;
 			}
 			// else: not enough memory: loop
-		
-			maxSub *= SUBNUM_FACT; 
+
+			maxSub *= SUBNUM_FACT;
 		}
-		
-		if(res < 0){
-			return errno;
+
+		if(res < 0){//this isn't correct !
+			free(ids);
+			return NULL;
 		}
 
 
         jintArray result;
         result = (*env)->NewIntArray(env, 2*ids->sub_count);
         if (result == NULL) {
+		free(ids);
             return NULL; /* out of memory error thrown */
         }
         // fill a temp structure to use to populate the java int array
@@ -82,6 +102,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
         }
         // move from the temp structure to the java structure
         (*env)->SetIntArrayRegion(env, result, 0, 2*ids->sub_count, fill);
+	free(ids);
         return result;
   }
 

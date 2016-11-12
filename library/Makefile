@@ -1,5 +1,6 @@
 all: compile 
 
+## Actualising it for java 1.8
 libname = "mptcp-api"
 jdkpath = "/usr/java/jdk1.8.0_101"
 jdkpath = "/usr/lib/jvm/java-7-openjdk-amd64"

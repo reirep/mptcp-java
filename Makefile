@@ -1,5 +1,5 @@
 #!/bin/sh
-all: clean compile run 
+all: clean compile run
 
 clean: 
 	make -C library clean
