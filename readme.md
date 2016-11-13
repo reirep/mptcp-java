@@ -17,5 +17,6 @@ The structure of the directory is the following.
  * ./library/com/... contains only the java part of the library 
 
 ## Documentation 
-
 Ongoing..
+Authors: Guillaume Demaude, Pierre Ortegat, Alexis Clarembeau
+
