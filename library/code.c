@@ -59,18 +59,29 @@ JNIEXPORT jint JNICALL Java_com_mptcp_Mptcp__1native_1openSubflow  (JNIEnv *env,
 
         addr = (struct sockaddr_in*) &sub_tuple->addrs[0];
 
-        addr->sin_family = AF_UNSPEC;
+        addr->sin_family = AF_INET;
         addr->sin_port = htons(source_port);
-        inet_pton(AF_UNSPEC, nativeSource, &addr->sin_addr);
+        inet_pton(AF_INET, nativeSource, &addr->sin_addr);
 
         addr++;
 
-        addr->sin_family = AF_UNSPEC;
+        addr->sin_family = AF_INET;
         addr->sin_port = htons(dest_port);
-        inet_pton(AF_UNSPEC, nativeDest, &addr->sin_addr);
+        inet_pton(AF_INET, nativeDest, &addr->sin_addr);
 
         error =  getsockopt(sockfd, IPPROTO_TCP, MPTCP_OPEN_SUB_TUPLE, sub_tuple, &optlen);
 
-        return sub_tuple->id;
+	if (error){
+		return NULL;
+}
+	int i;
+   	 optlen;
+   	struct mptcp_sub_ids *ids;
+
+   	optlen = 42;
+	ids = malloc(optlen);
+
+   	getsockopt(sockfd, IPPROTO_TCP, MPTCP_GET_SUB_IDS, ids, &optlen);
+        return ids->sub_status[0].id;//the last flow added is on first place in sub_status
 }
 
