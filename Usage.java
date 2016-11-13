@@ -6,12 +6,18 @@ public class Usage{
         try{
             Socket s = new Socket("10.0.0.2", 80); 
             int[][] res = Mptcp.getSubflowList(s);
-            System.out.println("Listing: "); 
-            for(int[] line : res){
+            System.out.println("Listing: "+res.length+" "+res[0].length);
+            for(int i = 0; i < res.length; i++)
+            	for(int j = 0; j < res[0].length; j++)
+            		System.out.print(res[i][j]);
+            System.out.println();
+/*
+          for(int[] line : res){
                 System.out.println("-- " + line + " " + line[0] + " " + line[1]); 
                 //Mptcp.HostTuple res2[] = Mptcp.getSubflowTuple(s, line[0]);
                 //System.out.println(res2[0] + ":::: " + res2[1]); 
             }
+
 	PrintWriter pred = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())),true);    
 	pred.println("Hello World");
 	Mptcp.HostTuple h = new Mptcp.HostTuple("10.1.0.1", 80);
@@ -37,7 +43,7 @@ public class Usage{
                  //Mptcp.HostTuple res2[] = Mptcp.getSubflowTuple(s, line[0]);
                  //System.out.println(res2[0] + ":::: " + res2[1]); 
          }
-
+*/
 	//dest '10.1.0.2' sourc '10.1.0.1'
         }
         catch(Exception e){
