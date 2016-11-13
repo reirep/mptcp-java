@@ -60,35 +60,32 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
 		return NULL;
 	}
 
-	//analysing the results
-
-	//crating the returned array here
-	//TODO : remove those F###ing hack
-	jintArray tableau = (*env)->NewIntArray(env, 2+SIZE_STRUCT*ids->sub_count);
-
-        if (tableau == NULL) {
+	jclass intArray = (*env)->FindClass(env, "[I");
+        jobjectArray ext = (*env)->NewObjectArray(env, ids->sub_count, intArray, NULL);
+	if(ext == NULL){
 		free(ids);
-		trowsMemErr(env, "Java environnement out of memomry !\n");
-        	return NULL; /* out of memory error thrown */
-        }
-
-        // fill a temp structure to use to populate the java int array
-	jint number[2] = {ids->sub_count,SIZE_STRUCT};
-	(*env)->SetIntArrayRegion(env, tableau, 0,2, number);
-	unsigned int i;
-        for (i = 0; i < ids->sub_count; i++) {
-        	jint fill[6] = {
-        		ids->sub_status[i].id,
-        		ids->sub_status[i].slave_sk,
-        		ids->sub_status[i].fully_established,
-        		ids->sub_status[i].attached,
-        		ids->sub_status[i].low_prio,
-        		ids->sub_status[i].pre_established
-        	};
-        	(*env)->SetIntArrayRegion(env, tableau, i*6+2, 6, fill);
+		trowsMemErr(env, MEM_ERR_MESSAGE);
+		return NULL;
 	}
-
-	free(ids);
-        return tableau;
+        int j;
+        for(j =0; j < ids->sub_count; j++){
+                jint fill[6] = {
+                        ids->sub_status[j].id,
+                        ids->sub_status[j].slave_sk,
+                        ids->sub_status[j].fully_established,
+                        ids->sub_status[j].attached,
+                        ids->sub_status[j].low_prio,
+                        ids->sub_status[j].pre_established
+                };
+                jintArray inner = (*env)->NewIntArray(env, SIZE_STRUCT);
+		if(inner == NULL){
+			free(ids);
+			trowsMemErr(env, MEM_ERR_MESSAGE);
+			return NULL;
+		}
+                (*env)->SetIntArrayRegion(env, inner, 0, 6, fill);
+                (*env)->SetObjectArrayElement(env, ext, j, inner);
+        }
+        return ext;
   }
 
