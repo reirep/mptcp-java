@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include<string.h>
 
 int
 makeipaddr (struct sockaddr *addr, int addrlen, char *buf)
@@ -52,41 +53,18 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   int res = getsockopt (sockfd, IPPROTO_TCP, MPTCP_GET_SUB_TUPLE,
 			sub_tuple,
 			&optlen);
-
-  if (res < 0)
-    {
-      return res;
-    }
-
-  struct sockaddr_in *sin = (struct sockaddr_in *) &sub_tuple->addrs[0];
-
-
-  makeipaddr ((struct sockaddr *) sin, sizeof (struct sockaddr_in), buf2);
-
-
-  jobjectArray result;
-  // TODO : trouver unen manière facile et optimale de retourner le résultat 
-  // (qui fonctionne) 
-  result = (*env)->NewObjectArray (env, 4, (*env)->FindClass(env, "java/lang/Object"), NULL);
-  if (result == NULL)
-    {
-      return NULL;		/* out of memory error thrown */
-    }
-
-  makeipaddr ((struct sockaddr *) sin, sizeof (struct sockaddr_in), buf1);
-
-    printf("++ %s ++\n", buf1); 
-  (*env)->SetObjectArrayElement (env, result, 0, (*env)->NewStringUTF (env, buf1));
-  (*env)->SetObjectArrayElement (env, result, 1, wrap_int(env, ntohs (sin->sin_port)));
-  // port: ntohs(sin->sin_port)
-  // host: buf1
-
+  struct sockaddr_in *sin;
+  sin = (struct sockaddr_in*) &sub_tuple->addrs[0];
+  sprintf(buf1,"%s:%hu ", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port)); 
 
   sin++;
+  sprintf(buf2,"%s:%hu", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port));
 
+  strcat(buf1, buf2);
 
-  (*env)->SetObjectArrayElement (env, result, 2, (*env)->NewStringUTF (env, buf2));
-  (*env)->SetObjectArrayElement (env, result, 3, wrap_int(env, ntohs (sin->sin_port)));
+  jstring result;
+  result= (*env)->NewStringUTF(env,buf1);
   return result;
+
 
 }

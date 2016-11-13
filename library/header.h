@@ -18,9 +18,9 @@ JNIEXPORT jintArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowTuple
- * Signature: (II)[Ljava/lang/Object;
+ * Signature: (II)Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
+JNIEXPORT jstring JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowTuple
   (JNIEnv *, jclass, jint, jint);
 
 /*
