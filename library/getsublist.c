@@ -63,7 +63,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
 	//analysing the results
 
 	//crating the returned array here
-
+	//TODO : remove those F###ing hack
 	jintArray tableau = (*env)->NewIntArray(env, 2+SIZE_STRUCT*ids->sub_count);
 
         if (tableau == NULL) {
