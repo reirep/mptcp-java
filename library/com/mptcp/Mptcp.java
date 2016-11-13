@@ -51,13 +51,13 @@ public class Mptcp{
 	    @return ?? todo ??
 	*/
 	public static int[][] getSubflowList(Socket sock){
-	    int[] res = _native_getSubflowList(getSocketFD(sock)); 
-	    int[][] ret = new int[res.length][2]; 
-	    for(int i = 0 ; i < res.length / 2 ; i++){
-	        ret[i][0] = res[2*i]; 
-	        ret[i][1] = res[2*i+1]; 
+	    int[] res = _native_getSubflowList(getSocketFD(sock));
+	    int [][] ret = new int[res[0]][res[1]];
+	    for(int i = 0; i < ret.length; i++){
+	    	for(int j =0; j < ret[0].length; j++)
+	    		ret[i][j] = res[i*res[0]+j+2];
 	    }
-	    return ret; 
+	    return ret;
 	}
 	/**
 	    Gets the source and destination host tuple of a given subflow

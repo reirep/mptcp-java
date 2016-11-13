@@ -16,21 +16,23 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 
+#define SUB_NUM 32 	// maximum acceptable number of subflows (for kernel memory)
+#define SIZE_STRUCT 6 //the current size of the mptcp_sub_ids
 
-#define INIT_SUBNUM 4	// initial max number of subflows
-#define SUBNUM_FACT 2 	// growth per step
-#define MAX_SUBNUM 128 	// maximum acceptable number of subflows (for kernel memory)
-/*
+#define MEM_ERR_MESSAGE "Impossible d'allouer la mém�oire nécéssaire !"
+
+//a small function to throw an error that signal that there is no enought memeory
 jint trowsMemErr(JNIEnv *env, char * message){
-	jclass OutMemErr = (*env)->findClass(env, "java/lang/OutOfMemoryError");
+	jclass OutMemErr = (*env)->FindClass(env, "java/lang/OutOfMemoryError");
 	if (OutMemErr == NULL) {
         	return throwNoClassDefError(env, "java/lang/OutOfMemoryError");
     	}
 	return (*env)->ThrowNew( env, OutMemErr, message);
 }
-*/
+
 /*
  * Class:     com_mptcp_Mptcp
  * Method:    _native_getSubflowList
@@ -38,71 +40,55 @@ jint trowsMemErr(JNIEnv *env, char * message){
  */
 JNIEXPORT jobjectArray JNICALL Java_com_mptcp_Mptcp__1native_1getSubflowList
   (JNIEnv *env, jclass class, jint sockfd){
-    
-        int i;
-		unsigned int optlen;
-		struct mptcp_sub_ids *ids = malloc(1);
-		if(ids == NULL){
-			
-			//there is not enought memeory, throw an error
-			return NULL;
-		}
 
+	unsigned int optlen;
+	struct mptcp_sub_ids *ids = malloc(SUB_NUM* sizeof(struct mptcp_sub_ids));
 
-		int maxSub = INIT_SUBNUM; 
-		int res = 0; 
+	if(ids == NULL){
+		trowsMemErr(env, strerror(errno));
+		return NULL;
+	}
 
-		while(maxSub < MAX_SUBNUM){
-			// tries to match at most maxSub subflows
+	optlen = sizeof(struct mptcp_sub_ids) + SUB_NUM * sizeof(struct mptcp_sub_status);
 
-			optlen =
-				sizeof(struct mptcp_sub_ids) +
-				maxSub * sizeof(struct mptcp_sub_status);
-			ids = realloc(ids, optlen);
-			if(ids == NULL){
-				return NULL;//TODO: check if it's the correct return and throw an exception
-			}
+	int res = getsockopt(sockfd, IPPROTO_TCP, MPTCP_GET_SUB_IDS, ids, &optlen);
 
-			int res =
-				getsockopt(sockfd, IPPROTO_TCP, MPTCP_GET_SUB_IDS, ids,
-					   &optlen);
-
-			if(res >= 0){
-				// enough memory and good result
-				break;
-			}
-			else if(errno != EINVAL){
-				// enough memory and bad result
-				free(ids);
-				//create an exception here
-				return NULL;
-			}
-			// else: not enough memory: loop
-
-			maxSub *= SUBNUM_FACT;
-		}
-
-		if(res < 0){//this isn't correct !
-			free(ids);
-			return NULL;
-		}
-
-
-        jintArray result;
-        result = (*env)->NewIntArray(env, 2*ids->sub_count);
-        if (result == NULL) {
+	if(res != 0){ // enough memory and bad result
+		char * error = strerror(errno);
 		free(ids);
-            return NULL; /* out of memory error thrown */
+		trowsMemErr(env, error);
+		return NULL;
+	}
+
+	//analysing the results
+
+	//crating the returned array here
+
+	jintArray tableau = (*env)->NewIntArray(env, 2+SIZE_STRUCT*ids->sub_count);
+
+        if (tableau == NULL) {
+		free(ids);
+		trowsMemErr(env, "Java environnement out of memomry !\n");
+        	return NULL; /* out of memory error thrown */
         }
+
         // fill a temp structure to use to populate the java int array
-        jint fill[2*ids->sub_count];
+	jint number[2] = {ids->sub_count,SIZE_STRUCT};
+	(*env)->SetIntArrayRegion(env, tableau, 0,2, number);
+	unsigned int i;
         for (i = 0; i < ids->sub_count; i++) {
-            fill[2*i] = ids->sub_status[i].id;
-            fill[2*i+1] = ids->sub_status[i].low_prio;
-        }
-        // move from the temp structure to the java structure
-        (*env)->SetIntArrayRegion(env, result, 0, 2*ids->sub_count, fill);
+        	jint fill[6] = {
+        		ids->sub_status[i].id,
+        		ids->sub_status[i].slave_sk,
+        		ids->sub_status[i].fully_established,
+        		ids->sub_status[i].attached,
+        		ids->sub_status[i].low_prio,
+        		ids->sub_status[i].pre_established
+        	};
+        	(*env)->SetIntArrayRegion(env, tableau, i*6+2, 6, fill);
+	}
+
 	free(ids);
-        return result;
+        return tableau;
   }
 
